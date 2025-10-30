@@ -247,6 +247,32 @@
       .btn-remove:hover {
         background: #dc2626;
       }
+      .btn-edit {
+        margin-left: 6px;
+        padding: 0.23rem 0.65rem;
+        background: #38bdf8;
+        color: #fff;
+        font-size: 0.8rem;
+        font-weight: 500;
+        border-radius: 0.375rem;
+        border: none;
+        cursor: pointer;
+        transition: background 0.19s;
+        flex-shrink: 0;
+      }
+      .btn-edit:hover { background: #0ea5e9; }
+      body.dark-mode .btn-edit { background: #1e40af; color: #bae6fd; }
+      body.dark-mode .btn-edit:hover { background: #1d4ed8; }
+      /* Show which rule is being edited */
+      .edit-highlight {
+        outline: 2.5px solid #38bdf8;
+        outline-offset: -2px;
+        background: #e0f2fe;
+      }
+      body.dark-mode .edit-highlight {
+        outline: 2.5px solid #1e40af;
+        background: #0d2136;
+      }
       .rule-item-toggle {
         margin-left: 1.25rem;
         margin-right: 0.5rem;
@@ -341,10 +367,271 @@
         background: #22223a;
       }
       /* End toggle styles */
+      .howto-btn {
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: #e0e7ef;
+        color: #2563eb;
+        font-weight: 900;
+        font-size: 1.1em;
+        margin-left: 0.37rem;
+        margin-right: 0.05rem;
+        box-shadow: 0 1.5px 6px #2d4a7c12;
+        border: none;
+        outline: none;
+        cursor: pointer;
+        transition: background 0.19s;
+      }
+      .howto-btn:hover { background: #dbeafe; }
+      body.dark-mode .howto-btn { background: #232f3e; color: #60a5fa; }
+      body.dark-mode .howto-btn:hover { background:#223363; }
+      /* How-to overlay */
+      .howto-overlay {
+        position: absolute;
+        left: 0; top: 0;
+        width: 100%; height: 100%;
+        background: rgba(249,250,251,0.97);
+        z-index: 202;
+        border-radius: 1.1rem;
+        box-sizing: border-box;
+        padding: 2.3rem 1.1rem 1.3rem 1.1rem;
+        display: none;
+        flex-direction: column;
+        justify-content: flex-start;
+        color: #1f2937;
+        overflow: auto;
+      }
+      .howto-overlay.active { display: flex; }
+      body.dark-mode .howto-overlay { background: #0d172aee; color: #f3f4f6; }
+      .howto-back-btn {
+        background: none;
+        border: none;
+        color: #2563eb;
+        font-size: 1.02em;
+        font-weight: 600;
+        cursor: pointer;
+        margin-bottom: 1.15rem;
+        align-self: flex-start;
+        transition: color 0.19s;
+      }
+      body.dark-mode .howto-back-btn { color: #60a5fa; }
+      .btn-edit, .btn-remove, .btn-cancel {
+        margin-left: 0.18rem;
+        padding: 0.18rem 0.45rem 0.18rem 0.45rem;
+        border-radius: 0.32rem;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.03em;
+        height: 1.6em;
+        min-width: 1.6em;
+        box-shadow: none;
+        background: none;
+        transition: background 0.17s;
+      }
+      .btn-remove { color: #ef4444; }
+      .btn-remove:hover { background: #fecdcd18; }
+      .btn-edit { color: #38bdf8; }
+      .btn-edit:hover { background: #cbf6ff27; }
+      .btn-cancel {
+        color: #8e8e8e;
+        margin-left: 0.39rem;
+        margin-right: -0.16rem;
+        background: none;
+      }
+      .btn-cancel:hover { color: #ef4444; background: #f7d6d6; }
+
+      .rule-actions {
+        display: flex;
+        flex-direction: column;
+        align-items: end;
+        gap: 0.18rem;
+        margin-left: 0.3rem;
+      }
+      .rule-item {
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 0.18rem;
+        padding: 0.36rem 0.57rem;
+        margin-bottom: 0.4rem;
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.375rem;
+        margin-bottom: 0.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .rule-item .text {
+        font-size: 0.95rem;
+        overflow: hidden;
+        flex: 1;
+        min-width: 1px;
+      }
+      .rule-item strong {
+        display: block;
+        font-weight: 500;
+        font-size: 0.99rem;
+        color: #374151;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        margin-bottom: 0.12rem;
+      }
+      .rule-item span {
+        display: block;
+        color: #6b7280;
+        font-size: 0.89rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .btn-remove {
+        margin-left: 0.5rem;
+        padding: 0.23rem 0.65rem;
+        background: #ef4444;
+        color: #fff;
+        font-size: 0.8rem;
+        font-weight: 500;
+        border-radius: 0.375rem;
+        border: none;
+        cursor: pointer;
+        transition: background 0.19s;
+        flex-shrink: 0;
+      }
+      .btn-remove:hover {
+        background: #dc2626;
+      }
+      .btn-edit {
+        margin-left: 6px;
+        padding: 0.23rem 0.65rem;
+        background: #38bdf8;
+        color: #fff;
+        font-size: 0.8rem;
+        font-weight: 500;
+        border-radius: 0.375rem;
+        border: none;
+        cursor: pointer;
+        transition: background 0.19s;
+        flex-shrink: 0;
+      }
+      .btn-edit:hover { background: #0ea5e9; }
+      body.dark-mode .btn-edit { background: #1e40af; color: #bae6fd; }
+      body.dark-mode .btn-edit:hover { background: #1d4ed8; }
+      /* Show which rule is being edited */
+      .edit-highlight {
+        outline: 2.5px solid #38bdf8;
+        outline-offset: -2px;
+        background: #e0f2fe;
+      }
+      body.dark-mode .edit-highlight {
+        outline: 2.5px solid #1e40af;
+        background: #0d2136;
+      }
+      .rule-item-toggle {
+        margin-left: 1.25rem;
+        margin-right: 0.5rem;
+        display: flex;
+        align-items: center;
+      }
+      /* Action icon styles */
+      .svg-action-icon { width:1.09em; height:1.09em; pointer-events: none; }
+      .edit-controls {
+        display: flex;
+        flex-direction: row;
+        gap: 0.33rem;
+        margin-bottom: 0.12rem;
+        width: 100%;
+      }
+      @media (max-width: 400px) {
+        .edit-controls { flex-direction: column; gap: 0.2rem; }
+      }
+      .btn-cancel-edit {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        padding: 0.5rem 1rem;
+        font-size: 0.97rem;
+        font-weight: 500;
+        border-radius: 0.375rem;
+        border: 1px solid transparent;
+        cursor: pointer;
+        outline: none;
+        background: #fee2e2; /* light red */
+        color: #b91c1c;
+        transition: background 0.19s, color 0.19s;
+      }
+      .btn-cancel-edit:hover {
+        background: #fecaca;
+        color: #991b1b;
+      }
+      body.dark-mode .btn-cancel-edit {
+        background: #4b1818;
+        color: #fecaca;
+        border-color: #dc2626;
+      }
+      body.dark-mode .btn-cancel-edit:hover {
+        background: #991b1b;
+        color: #fff1f2;
+      }
+      .form-section form { width: 100%; }
+      .switch-toggle {
+        position: relative;
+        width: 32px; height: 18px;
+        margin-right: 0.85rem;
+        display:inline-block;
+        vertical-align:middle;
+      }
+      .switch-toggle input {
+        opacity:0; width:0; height:0;
+      }
+      .switch-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0; left: 0;
+        right: 0; bottom: 0;
+        background: #d1d5db;
+        -webkit-transition: .3s; transition: .3s;
+        border-radius: 999px;
+      }
+      .switch-slider:before {
+        position: absolute;
+        content: '';
+        left: 2px; top:2px;
+        height: 14px; width: 14px;
+        background: white;
+        border-radius: 50%;
+        transition: .3s;
+        box-shadow: 0 1px 2px #0001;
+      }
+      .switch-toggle input:checked + .switch-slider {
+        background: #4ade80; /* emerald */
+      }
+      .switch-toggle input:checked + .switch-slider:before {
+        transform: translateX(14px);
+        background: #22c55e; /* main green thumb */
+      }
+      body.dark-mode .switch-slider {
+        background: #52525b;
+      }
+      body.dark-mode .switch-toggle input:checked + .switch-slider {
+        background: #2563eb;
+      }
+      body.dark-mode .switch-toggle input:checked + .switch-slider:before {
+        background: #2563eb;
+      }
     </style>
   </head>
   <body class="dark-mode">
-    <div class="container">
+    <div class="container" style="position:relative;">
       <div class="dark-toggle-wrap" style="justify-content:flex-end;">
         <label class="theme-switch" title="Toggle dark mode">
           <input type="checkbox" id="dark-toggle" checked>
@@ -354,6 +641,24 @@
             <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path d="M18 15.63c-1.833.964-4.086.939-6.087-.7-3.036-2.39-3.858-6.85-1.82-9.822.164-.236.079-.563-.18-.652A8.999 8.999 0 1 0 21 12.75c0-.228-.184-.414-.41-.4-1.009.061-2.174.473-2.59 1.08Z" stroke="currentColor" stroke-width="1.5"/></svg>
           </span>
         </label>
+        <button class="howto-btn" id="howto-open" title="Show How To Use">
+          <span style="font-size:1.19em;font-family:inherit;vertical-align:middle;">i</span>
+        </button>
+      </div>
+      <div id="howto-overlay" class="howto-overlay" tabindex="-1">
+        <button class="howto-back-btn" id="howto-back">← Back</button>
+        <div style="margin-top:-0.8rem;">
+          <h2 style="font-size:1.1em;margin-bottom:1.1em;color:#2563eb;">How to use DOM Element Remover</h2>
+          <ol style="padding-left:1.1em;line-height:1.8;font-size:1.03em;">
+            <li>Click the <b>DOM Element Remover</b> icon in your browser toolbar.</li>
+            <li>Add a new rule: enter the page's URL or domain and the CSS selector(s) of the element(s) you want removed.</li>
+            <li>Use <b>Use Current Page URL</b> for auto-filling the URL.</li>
+            <li>Toggle rules on/off using the switch next to each rule.</li>
+            <li>Reload affected pages to see changes.</li>
+            <li>Enjoy a smoother web experience!</li>
+          </ol>
+          <div style="margin-top:2.1em;color:#89a2e6;font-size:0.95em;">For more help, see the <a href="https://github.com/ramesh-madara/dom_element_remover" target="_blank" style="color:#6fa4ff;">README</a> or contact <a href="https://www.instagram.com/ramesh_madara/" target="_blank">@ramesh_madara</a></div>
+        </div>
       </div>
       <h1 class="header-title">DOM Element Remover</h1>
 
@@ -368,18 +673,20 @@
             placeholder="e.g., example.com"/>
         </div>
         <div class="input-group">
-          <label for="selector">CSS Selector (ID or Class)</label>
+          <label for="selector">CSS Selector(s), comma-separated (ex: <b>.class1, #id2, .class2</b>)</label>
           <input
             type="text"
             id="selector"
             placeholder="e.g., #sidebar or .ad-banner"/>
         </div>
-        <button
-          id="add-rule"
-          class="btn btn-primary"
-        >
-          Add Rule
-        </button>
+        <div id="form-actions">
+          <button
+            id="add-rule"
+            class="btn btn-primary"
+          >
+            Add Rule
+          </button>
+        </div>
         <button
           id="add-current-page"
           class="btn btn-secondary"

@@ -15,6 +15,36 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
+    let editingRuleIndex = null;
+    let cancelEditButton = null;
+    const formActions = document.getElementById('form-actions');
+
+    function updateFormActions(isEditing) {
+        if (!formActions) return;
+        while (formActions.firstChild) formActions.removeChild(formActions.firstChild);
+        if (isEditing) {
+            const row = document.createElement('div');
+            row.className = 'edit-controls';
+            addRuleButton.textContent = 'Save';
+            row.appendChild(addRuleButton);
+            cancelEditButton = document.createElement('button');
+            cancelEditButton.className = 'btn-cancel-edit';
+            cancelEditButton.type = 'button';
+            cancelEditButton.textContent = 'Cancel';
+            cancelEditButton.onclick = () => {
+                urlInput.value = '';
+                selectorInput.value = '';
+                resetEditState();
+                loadRules();
+            };
+            row.appendChild(cancelEditButton);
+            formActions.appendChild(row);
+        } else {
+            addRuleButton.textContent = 'Add Rule';
+            formActions.appendChild(addRuleButton);
+        }
+    }
+
     // Load and display existing rules
     function loadRules() {
         try {
@@ -39,6 +69,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         data.rules.forEach((rule, index) => {
                             try {
                                 const ruleElement = createRuleElement(rule, index);
+                                if (editingRuleIndex !== null && editingRuleIndex === index) {
+                                    ruleElement.classList.add('edit-highlight');
+                                }
                                 rulesList.appendChild(ruleElement);
                             } catch (ceErr) {
                                 console.error('Error creating rule element:', ceErr);
@@ -63,63 +96,70 @@ document.addEventListener('DOMContentLoaded', () => {
             text.className = 'text';
             const urlEl = document.createElement('strong');
             urlEl.textContent = rule.url;
-            urlEl.className = '';
             const selectorEl = document.createElement('span');
             selectorEl.textContent = rule.selector;
-            selectorEl.className = '';
             text.appendChild(urlEl);
             text.appendChild(selectorEl);
-            // Toggle checkbox for enable/disable
-            const toggleLabel = document.createElement('label');
-            toggleLabel.style.marginLeft = '1.25rem';
-            toggleLabel.style.marginRight = '0.5rem';
-            toggleLabel.style.display = 'flex';
-            toggleLabel.style.alignItems = 'center';
-            const toggle = document.createElement('input');
-            toggle.type = 'checkbox';
-            toggle.checked = (rule.enabled === undefined ? true : !!rule.enabled);
-            toggle.title = toggle.checked ? 'Turn rule off' : 'Turn rule on';
-            toggle.addEventListener('change', () => {
-                try {
-                    chrome.storage.sync.get({ rules: [] }, (data) => {
-                        if (chrome.runtime.lastError) {
-                            console.error('chrome.storage.sync.get (toggle) error:', chrome.runtime.lastError.message);
-                            return;
-                        }
-                        const updatedRules = (data.rules || []).slice();
-                        if (updatedRules[index]) {
-                            updatedRules[index].enabled = toggle.checked;
-                        }
-                        chrome.storage.sync.set({ rules: updatedRules }, () => {
-                            if (chrome.runtime.lastError) {
-                                console.error('chrome.storage.sync.set (toggle) error:', chrome.runtime.lastError.message);
-                            }
-                            loadRules();
-                        });
-                    });
-                } catch (e) {
-                    console.error('Error toggling rule:', e);
-                }
-            });
-            toggleLabel.appendChild(toggle);
-            const toggleDesc = document.createElement('span');
-            toggleDesc.textContent = toggle.checked ? 'On' : 'Off';
-            toggleDesc.style.marginLeft = '0.4rem';
-            toggleLabel.appendChild(toggleDesc);
-            div.appendChild(text);
-            div.appendChild(toggleLabel);
-            // Remove button
+            // Action icons (col)
+            const actions = document.createElement('div');
+            actions.className = 'rule-actions';
+            // Edit icon-button
+            const editButton = document.createElement('button');
+            editButton.className = 'btn-edit';
+            editButton.title = 'Edit';
+            editButton.dataset.index = index;
+            editButton.innerHTML = `<svg class="svg-action-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 0 0-2.828 0l-8.794 8.793a1 1 0 0 0-.263.456l-1.5 5a1 1 0 0 0 1.263 1.263l5-1.5a1 1 0 0 0 .456-.263l8.793-8.794a2 2 0 0 0 0-2.828l-2-2zm-9.121 9.12 7.085-7.084 1.415 1.414-7.085 7.085-1.415-1.415z"/></svg>`;
+            editButton.addEventListener('click', editRule);
+            // Remove icon-button
             const removeButton = document.createElement('button');
-            removeButton.textContent = 'Remove';
             removeButton.className = 'btn-remove';
+            removeButton.title = 'Remove';
             removeButton.dataset.index = index;
+            removeButton.innerHTML = `<svg class="svg-action-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="1.5" d="m7.75 7.75 8.5 8.5m0-8.5-8.5 8.5"/><rect width="20" height="20" x="2" y="2" stroke="currentColor" stroke-width="1.5" rx="4"/></svg>`;
             removeButton.addEventListener('click', removeRule);
-            div.appendChild(removeButton);
+            actions.appendChild(editButton);
+            actions.appendChild(removeButton);
+            div.appendChild(text);
+            // If there's a toggle, add toggle here (skip here to focus on actions)
+            div.appendChild(actions);
             return div;
         } catch (err) {
             console.error('createRuleElement error:', err);
             throw err;
         }
+    }
+
+    function editRule(event) {
+        try {
+            const indexToEdit = parseInt(event.target.dataset.index, 10);
+            chrome.storage.sync.get({ rules: [] }, (data) => {
+                if (chrome.runtime.lastError) {
+                    console.error('chrome.storage.sync.get (editRule) error:', chrome.runtime.lastError.message);
+                    return;
+                }
+                if (!data || !Array.isArray(data.rules) || !data.rules[indexToEdit]) {
+                    alert('Error: Rule not found.');
+                    return;
+                }
+                const rule = data.rules[indexToEdit];
+                urlInput.value = rule.url;
+                selectorInput.value = rule.selector;
+                editingRuleIndex = indexToEdit;
+                updateFormActions(true);
+                loadRules(); // highlight being edited
+            });
+        } catch (err) {
+            console.error('editRule outer error:', err);
+        }
+    }
+
+    function resetEditState() {
+        editingRuleIndex = null;
+        if (cancelEditButton && cancelEditButton.parentNode) {
+            cancelEditButton.parentNode.removeChild(cancelEditButton);
+            cancelEditButton = null;
+        }
+        updateFormActions(false);
     }
 
     // Add a new rule to storage
@@ -131,33 +171,65 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('Please fill in both the URL and Selector fields.');
                 return;
             }
-            chrome.storage.sync.get({ rules: [] }, (data) => {
-                if (chrome.runtime.lastError) {
-                    console.error('chrome.storage.sync.get (addRule) error:', chrome.runtime.lastError.message);
-                    return;
-                }
-                try {
-                    if (!data || !Array.isArray(data.rules)) {
-                        console.error('Malformed rules data during addRule:', data);
-                        alert('Error saving rule: storage data malformed.');
+            if (editingRuleIndex !== null) {
+                // Save edit
+                chrome.storage.sync.get({ rules: [] }, (data) => {
+                    if (chrome.runtime.lastError) {
+                        console.error('chrome.storage.sync.get (edit save) error:', chrome.runtime.lastError.message);
                         return;
                     }
-                    // Add enabled true on creation
-                    const newRules = [...data.rules, { url, selector, enabled: true }];
-                    chrome.storage.sync.set({ rules: newRules }, () => {
+                    if (!data || !Array.isArray(data.rules) || !data.rules[editingRuleIndex]) {
+                        alert('Error: Rule not found (edit save).');
+                        resetEditState();
+                        return;
+                    }
+                    const updatedRules = [...data.rules];
+                    updatedRules[editingRuleIndex] = {
+                        ...updatedRules[editingRuleIndex],
+                        url,
+                        selector
+                    };
+                    chrome.storage.sync.set({ rules: updatedRules }, () => {
                         if (chrome.runtime.lastError) {
-                            console.error('chrome.storage.sync.set (addRule) error:', chrome.runtime.lastError.message);
+                            console.error('chrome.storage.sync.set (edit save) error:', chrome.runtime.lastError.message);
                             alert('Error saving rule.');
                             return;
                         }
                         urlInput.value = '';
                         selectorInput.value = '';
-                        loadRules(); // Refresh the list
+                        resetEditState();
+                        loadRules();
                     });
-                } catch (e) {
-                    console.error('addRule logic error:', e);
-                }
-            });
+                });
+            } else {
+                // old add logic
+                chrome.storage.sync.get({ rules: [] }, (data) => {
+                    if (chrome.runtime.lastError) {
+                        console.error('chrome.storage.sync.get (addRule) error:', chrome.runtime.lastError.message);
+                        return;
+                    }
+                    try {
+                        if (!data || !Array.isArray(data.rules)) {
+                            console.error('Malformed rules data during addRule:', data);
+                            alert('Error saving rule: storage data malformed.');
+                            return;
+                        }
+                        const newRules = [...data.rules, { url, selector, enabled: true }];
+                        chrome.storage.sync.set({ rules: newRules }, () => {
+                            if (chrome.runtime.lastError) {
+                                console.error('chrome.storage.sync.set (addRule) error:', chrome.runtime.lastError.message);
+                                alert('Error saving rule.');
+                                return;
+                            }
+                            urlInput.value = '';
+                            selectorInput.value = '';
+                            loadRules(); // Refresh the list
+                        });
+                    } catch (e) {
+                        console.error('addRule logic error:', e);
+                    }
+                });
+            }
         } catch (err) {
             console.error('addRule outer error:', err);
         }
@@ -273,6 +345,28 @@ document.addEventListener('DOMContentLoaded', () => {
     // Load preference on popup open
     loadDarkMode();
 
+    // How-to overlay toggle logic
+    const howtoOpenBtn = document.getElementById('howto-open');
+    const howtoOverlay = document.getElementById('howto-overlay');
+    const howtoBackBtn = document.getElementById('howto-back');
+    if (howtoOpenBtn && howtoOverlay && howtoBackBtn) {
+      howtoOpenBtn.addEventListener('click', () => {
+        howtoOverlay.classList.add('active');
+        howtoOverlay.focus();
+      });
+      howtoBackBtn.addEventListener('click', () => {
+        howtoOverlay.classList.remove('active');
+        howtoOpenBtn.focus();
+      });
+      // Escape closes
+      howtoOverlay.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          howtoOverlay.classList.remove('active');
+          howtoOpenBtn.focus();
+        }
+      });
+    }
+
     // Event Listeners
     try {
         addRuleButton.addEventListener('click', addRule);
@@ -281,6 +375,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     // Initial load
     try {
+        updateFormActions(false);
         loadRules();
     } catch (err) {
         console.error('Initial loadRules() error:', err);

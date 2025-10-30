@@ -13,67 +13,58 @@ function removeElement(selector) {
     }
 }
 
-// Listen for when a tab is updated (e.g., new URL loaded)
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+// Content script logic as a string
+const removalScript = `(selectors) => {
+  function runRemoval() {
     try {
-        // We only want to run our script when the page is fully loaded
-        // and has a valid URL.
-        if (changeInfo.status === 'complete' && tab.url && tab.url.startsWith('http')) {
-            // Get all saved rules
-            chrome.storage.sync.get({ rules: [] }, (data) => {
-                if (chrome.runtime.lastError) {
-                    console.error('chrome.storage.sync.get error:', chrome.runtime.lastError.message);
-                    return;
-                }
-                try {
-                    if (!data || !Array.isArray(data.rules)) {
-                        console.error('Extension: Rules data missing or malformed:', data);
-                        return;
-                    }
-                    // Only match enabled rules (default true if missing)
-                    const matchingRule = data.rules.find(rule => tab.url.includes(rule.url) && (rule.enabled === undefined || rule.enabled === true));
-                    if (typeof matchingRule === 'undefined') {
-                        console.log('No matching rule found for URL:', tab.url);
-                    }
-                    if (matchingRule) {
-                        // If the tab's URL matches a rule, inject our function
-                        chrome.scripting.executeScript({
-                            target: { tabId: tabId },
-                            func: removeElement,
-                            args: [matchingRule.selector] // Pass the selector as an argument
-                        }, (injectionResults) => {
-                            if (chrome.runtime.lastError) {
-                                console.error('chrome.scripting.executeScript error:', chrome.runtime.lastError.message);
-                                return;
-                            }
-                            if (!injectionResults || injectionResults.length === 0 || typeof injectionResults[0].result === 'undefined') {
-                                console.error('Script injection failed or returned no result:', injectionResults);
-                                return;
-                            }
-                            const result = injectionResults[0].result;
-                            if (result === true) {
-                                // If successful, create a notification
-                                chrome.notifications.create({
-                                    type: 'basic',
-                                    iconUrl: 'icons/icon48.png',
-                                    title: 'Element Removed',
-                                    message: `Removed element '${matchingRule.selector}' from this page.`
-                                }, (notificationId) => {
-                                    if (chrome.runtime.lastError) {
-                                        console.error('chrome.notifications.create error:', chrome.runtime.lastError.message);
-                                    }
-                                });
-                            } else {
-                                console.warn('Element not found or could not be removed for selector:', matchingRule.selector, 'in tab:', tab.url);
-                            }
-                        });
-                    }
-                } catch (innerErr) {
-                    console.error('Error during rule processing or script injection:', innerErr);
-                }
-            });
-        }
-    } catch (err) {
-        console.error('Error in tabs.onUpdated listener:', err);
+      selectors.split(',').map(s => s.trim()).forEach(selector => {
+        const nodes = document.querySelectorAll(selector);
+        nodes.forEach(node => node && node.remove());
+      });
+    } catch(e) {
+      console.error('Element Remover ContentScript Error:', e.message);
     }
+  }
+  runRemoval();
+  // React/SPA: Watch for DOM or route changes
+  const observer = new MutationObserver(runRemoval);
+  observer.observe(document.documentElement || document.body, {childList:true, subtree:true});
+  // (Optionally add routechange/pushState listeners here)
+}`;
+
+function injectScript(tabId, selectors) {
+  chrome.scripting.executeScript({
+    target: {tabId: tabId},
+    func: eval(removalScript),
+    args: [selectors]
+  }, (results) => {
+    if (chrome.runtime.lastError) {
+      console.error('content script injection error:', chrome.runtime.lastError.message);
+    }
+  });
+}
+
+// Watch both tab update and SPA navigation
+function applyRulesForTab(tabId, url) {
+  chrome.storage.sync.get({ rules: [] }, (data) => {
+    const enabledRule = data.rules.find(rule => url.includes(rule.url) && (rule.enabled === undefined || rule.enabled === true));
+    if (enabledRule) {
+      injectScript(tabId, enabledRule.selector);
+    }
+  });
+}
+
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.status === 'complete' && tab.url && tab.url.startsWith('http')) {
+    applyRulesForTab(tabId, tab.url);
+  }
 });
+
+// SPA navigations (pushState)
+chrome.webNavigation.onHistoryStateUpdated.addListener(details => {
+  chrome.tabs.get(details.tabId, tab => {
+    if (tab.url && tab.url.startsWith('http')) {
+      applyRulesForTab(tab.id, tab.url);
+    }
+  });
+}, {url: [{schemes: ['http', 'https']}],});

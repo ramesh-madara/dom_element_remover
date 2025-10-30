@@ -29,6 +29,20 @@
 ### Chrome Web Store Install *(coming soon!)*
 📢 *This extension will be available on the Chrome Web Store soon!*
 
+### Install on Edge, Brave, and Other Chromium Browsers
+You can use Element Remover in browsers like **Microsoft Edge**, **Brave**, **Vivaldi**, and others that support Chrome extensions:
+
+1. Download or clone this repo as above.
+2. Open your browser's extensions page:
+    - **Edge:** `edge://extensions`
+    - **Brave:** `brave://extensions`
+    - **Vivaldi:** `vivaldi://extensions`
+    - Others: Go to your browser settings and search 'Extensions'.
+3. Enable **Developer Mode** (top right or sidebar).
+4. Click **Load unpacked** (or similar) and select the project folder.
+
+You can also install from the Chrome Web Store once the extension is published (coming soon!).
+
 ---
 
 ## 💡 Usage

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Element Remover</title>
+    <style>
+      body {
+        width: 350px;
+        font-family: "Inter", sans-serif;
+        background: #f9fafb;
+        color: #1f2937;
+        padding: 1rem;
+      }
+      .container { margin-top: 0; margin-bottom: 0; }
+      .header-title {
+        font-size: 1.25rem;
+        font-weight: bold;
+        text-align: center;
+        color: #2563eb;
+        margin-bottom: 1.25rem;
+      }
+      .form-section {
+        background: #fff;
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 4px #0001;
+        padding: 1rem;
+        margin-bottom: 1rem;
+      }
+      .form-section h2,
+      .rules-section h2 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+      }
+      .input-group {
+        margin-bottom: 0.75rem;
+      }
+      label {
+        display: block;
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: #374151;
+        margin-bottom: 0.33rem;
+      }
+      input[type="text"] {
+        display: block;
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.375rem;
+        font-size: 0.97rem;
+        outline: none;
+        box-shadow: 0 0 0 0 #2563eb00;
+        transition: border 0.2s, box-shadow 0.2s;
+        margin-top: 0.2rem;
+      }
+      input[type="text"]:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 2px #2563eb22;
+      }
+      .btn {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        padding: 0.5rem 1rem;
+        font-size: 0.97rem;
+        font-weight: 500;
+        border-radius: 0.375rem;
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: background 0.2s, color 0.2s;
+        outline: none;
+      }
+      .btn-primary {
+        background: #2563eb;
+        color: #fff;
+        border-color: transparent;
+      }
+      .btn-primary:hover {
+        background: #1d4ed8;
+      }
+      .btn-secondary {
+        background: #fff;
+        color: #374151;
+        border: 1px solid #d1d5db;
+      }
+      .btn-secondary:hover {
+        background: #f3f4f6;
+      }
+      .rules-section {
+        background: none;
+        padding: 0;
+        margin: 0;
+      }
+      #rules-list {
+        max-height: 16rem;
+        overflow-y: auto;
+        background: #fff;
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 4px #0001 inset;
+        margin-bottom: 0.8rem;
+      }
+      .no-rules {
+        color: #6b7280;
+        font-size: 0.92rem;
+        text-align: center;
+        margin-top: 0.5rem;
+      }
+      .rule-item {
+        padding: 0.5rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.375rem;
+        background: #f9fafb;
+        margin-bottom: 0.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .rule-item .text {
+        font-size: 0.95rem;
+        overflow: hidden;
+        flex: 1;
+      }
+      .rule-item strong {
+        display: block;
+        font-weight: 500;
+        font-size: 0.99rem;
+        color: #374151;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        margin-bottom: 0.12rem;
+      }
+      .rule-item span {
+        display: block;
+        color: #6b7280;
+        font-size: 0.89rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .btn-remove {
+        margin-left: 0.5rem;
+        padding: 0.23rem 0.65rem;
+        background: #ef4444;
+        color: #fff;
+        font-size: 0.8rem;
+        font-weight: 500;
+        border-radius: 0.375rem;
+        border: none;
+        cursor: pointer;
+        transition: background 0.19s;
+        flex-shrink: 0;
+      }
+      .btn-remove:hover {
+        background: #dc2626;
+      }
+      .rule-item-toggle {
+        margin-left: 1.25rem;
+        margin-right: 0.5rem;
+        display: flex;
+        align-items: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="header-title">Element Remover</h1>
+
+      <!-- Form to add a new rule -->
+      <div class="form-section">
+        <h2>Add New Rule</h2>
+        <div class="input-group">
+          <label for="url">URL (or part of it)</label>
+          <input
+            type="text"
+            id="url"
+            placeholder="e.g., example.com"/>
+        </div>
+        <div class="input-group">
+          <label for="selector">CSS Selector (ID or Class)</label>
+          <input
+            type="text"
+            id="selector"
+            placeholder="e.g., #sidebar or .ad-banner"/>
+        </div>
+        <button
+          id="add-rule"
+          class="btn btn-primary"
+        >
+          Add Rule
+        </button>
+        <button
+          id="add-current-page"
+          class="btn btn-secondary"
+        >
+          Use Current Page URL
+        </button>
+      </div>
+
+      <!-- List of existing rules -->
+      <div class="rules-section">
+        <h2>Saved Rules</h2>
+        <div
+          id="rules-list"
+        >
+          <!-- Rules will be dynamically inserted here -->
+          <p id="no-rules" class="no-rules">
+            No rules saved yet.
+          </p>
+        </div>
+      </div>
+    </div>
+    <script src="popup.js"></script>
+  </body>
+</html>

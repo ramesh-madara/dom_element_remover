@@ -227,6 +227,52 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // ----- Dark Mode Toggle Logic -----
+    const darkToggleCheckbox = document.getElementById('dark-toggle');
+    function applyDarkMode(enabled) {
+        if (enabled) {
+            document.body.classList.add('dark-mode');
+        } else {
+            document.body.classList.remove('dark-mode');
+        }
+        if (darkToggleCheckbox) {
+            darkToggleCheckbox.checked = !!enabled;
+        }
+    }
+    // Chrome storage: dark mode preference
+    function loadDarkMode() {
+        try {
+            chrome.storage.sync.get({ darkMode: true }, data => {
+                if (chrome.runtime.lastError) {
+                    console.error('darkMode storage get error:', chrome.runtime.lastError.message);
+                    applyDarkMode(true); // fallback: dark mode
+                    return;
+                }
+                applyDarkMode(data.darkMode !== false); // treat undefined as true
+            });
+        } catch (e) {
+            console.error('Error getting darkMode from storage:', e);
+            applyDarkMode(true);
+        }
+    }
+    if (darkToggleCheckbox) {
+        darkToggleCheckbox.addEventListener('change', () => {
+            try {
+                const enabled = darkToggleCheckbox.checked;
+                applyDarkMode(enabled);
+                chrome.storage.sync.set({ darkMode: enabled }, () => {
+                    if (chrome.runtime.lastError) {
+                        console.error('darkMode storage set error:', chrome.runtime.lastError.message);
+                    }
+                });
+            } catch (e) {
+                console.error('darkToggle change handling error:', e);
+            }
+        });
+    }
+    // Load preference on popup open
+    loadDarkMode();
+
     // Event Listeners
     try {
         addRuleButton.addEventListener('click', addRule);

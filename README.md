@@ -1,6 +1,6 @@
 # Element Remover Chrome Extension
 
-![Element Remover banner](https://raw.githubusercontent.com/ramesh-madara/dom_element_remover/refs/heads/main/icons/icon128.png)
+![Element Remover banner](https://user-images.githubusercontent.com/123/element-remover-banner.png)
 
 > **Clean up the web by removing unwanted elements from any site!**
 
